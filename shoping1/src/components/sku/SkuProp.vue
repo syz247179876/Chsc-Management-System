@@ -82,10 +82,18 @@
         </el-table-column>
       </el-table>
     </div>
+    <SkuPropDetail
+      :dialogVisible="dialogVisible"
+      :commodityList="commodityList"
+      :permission="permission"
+      @closeDialog="closeDialog"
+      @refresh="getSkuProp"
+    ></SkuPropDetail>
   </div>
 </template>
 
 <script>
+const SkuPropDetail = () => import('@/components/sku/SkuPropDetail')
 export default {
   name: 'SkuProp',
   data() {
@@ -103,8 +111,11 @@ export default {
       permission: 100008,
       count: 0,
       multipleSelection: [], // sku复选框
+      dialogVisible: false, // 显示弹框
+      commodityList: [], // 商品列表
     }
   },
+  components: { SkuPropDetail },
   created() {
     this.getSkuProp()
   },
@@ -117,6 +128,7 @@ export default {
       if (res.status === 200) {
         this.skuPropList = res.data.data
         this.count = res.data.count
+        this.commodityList = res.data.commodity
       }
     },
 
@@ -149,8 +161,10 @@ export default {
       }
     },
 
-    // 添加Sku类目
-    async addSkuProp() {},
+    // 添加Sku类目，显示弹框
+    async addSkuProp() {
+      this.dialogVisible = true
+    },
 
     // 删除Sku类目
     async deleteSkuProp() {
@@ -176,6 +190,10 @@ export default {
           type: 'error',
         })
       }
+    },
+    // 关闭dialog
+    closeDialog() {
+      this.dialogVisible = false
     },
   },
 }

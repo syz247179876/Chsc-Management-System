@@ -6,9 +6,9 @@
       <el-breadcrumb-item>Sku管理</el-breadcrumb-item>
       <el-breadcrumb-item>Sku列表</el-breadcrumb-item>
     </el-breadcrumb>
-    <van-row> 有效Sku列表管理 </van-row>
+    有效Sku列表管理
     <SkuEfficient></SkuEfficient>
-    <van-row> Sku类目管理 </van-row>
+    Sku类目管理
     <SkuProp></SkuProp>
   </div>
 </template>
