@@ -31,12 +31,12 @@
         <el-table-column label="运费模板名" prop="name"></el-table-column>
         <el-table-column
           label="是否免运费"
-          prop="is_free"
+          prop="str_is_free"
           width="85px"
         ></el-table-column>
         <el-table-column
           label="收费类型"
-          prop="charge_type"
+          prop="str_charge_type"
           width="85px"
         ></el-table-column>
         <el-table-column label="操作" width="180px">
@@ -45,7 +45,7 @@
             <el-button
               type="warning"
               size="mini"
-              @click="deleteGoodsBtn(scope.row.goods_id)"
+              @click="deleteFreightBtn(scope.row.pk)"
               >删除</el-button
             >
           </template>
@@ -98,6 +98,28 @@ export default {
       if (res.status != 200) return this.$message.error('获取商品列表失败')
       this.freightList = res.data.data
       this.count = res.data.count
+    },
+
+    // 删除制定运费模板
+    async deleteFreightBtn(id) {
+      let data = []
+      data.push(id)
+      const res = await this.$http.delete('/seller/chsc/apis/freight/', {
+        data: { pk_list: data },
+        headers: { Permission: this.permission },
+      })
+      if (res.status === 200 && res.data.code === 1051) {
+        this.$message({
+          message: '删除成功',
+          type: 'success',
+        })
+        this.getFreightList()
+      } else {
+        this.$message({
+          message: res.data.detail,
+          type: 'fail',
+        })
+      }
     },
   },
 }
