@@ -22,7 +22,7 @@
           </el-input>
         </el-col>
         <el-col :span="4">
-          <el-button type="primary">添加商品</el-button>
+          <el-button type="danger" @click="deleteOrder">删除订单</el-button>
         </el-col>
       </el-row>
       <!-- 商品表格 -->
@@ -31,8 +31,9 @@
         border
         stripe
         style="width: 100%"
-        :row-class-name="tableRowClassName"
+        @selection-change="handleSelectionChange"
       >
+        <el-table-column type="selection" width="55"> </el-table-column>
         <el-table-column type="index"></el-table-column>
         <!-- 行展开功能 -->
         <el-table-column type="expand">
@@ -111,7 +112,7 @@
             <el-button
               type="warning"
               size="mini"
-              @click="deleteGoodsBtn(scope.row.goods_id)"
+              @click="deleteGoodsBtn(scope.row.pk)"
               >删除</el-button
             >
           </template>
@@ -148,6 +149,7 @@ export default {
       orderList: [],
       permission: 100002,
       count: 0,
+      multipleSelection: [], // 订单复选框
     }
   },
   created() {
@@ -160,6 +162,43 @@ export default {
       if (res.status === 200) {
         this.orderList = res.data.data
         this.count = res.data.count
+      }
+    },
+
+    // 勾选/取消复选框
+    handleSelectionChange(val) {
+      this.multipleSelection = val
+    },
+
+    // 群删除订单
+    async deleteOrder() {
+      let data = []
+      for (let i in this.multipleSelection) {
+        data.push(this.multipleSelection[i].pk)
+      }
+      const res = await this.$http.delete(
+        '/order/chsc/apis/order/delete-multiple/',
+        { data: { pk_list: data, identity: 1 } }
+      )
+      this.getOrderSeller()
+    },
+
+    // 单删订单
+    async deleteGoodsBtn(id) {
+      const res = await this.$http.delete(
+        '/order/chsc/apis/order/' + id + '/?identity=1'
+      )
+      if (res.status === 200 && res.data.code === 1018) {
+        this.$message({
+          message: '删除成功',
+          type: 'success',
+        })
+        this.getOrderSeller()
+      } else {
+        this.$message({
+          message: '删除失败',
+          type: 'fail',
+        })
       }
     },
   },
