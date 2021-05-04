@@ -35,6 +35,9 @@
         <el-table-column type="expand">
           <template slot-scope="props">
             <el-form label-position="left" block class="demo-table-expand">
+              <el-form-item label="所属商品:">
+                <span>{{ props.row.commodity_name }}</span>
+              </el-form-item>
               <el-form-item label="sku类目:">
                 <span>{{ props.row.name }}</span>
               </el-form-item>
@@ -52,6 +55,13 @@
           </template>
         </el-table-column>
 
+        <el-table-column
+          label="sku类目所属商品"
+          prop="commodity_name"
+          width="160px"
+          sortable
+        >
+        </el-table-column>
         <el-table-column
           label="sku类目"
           prop="name"
@@ -71,7 +81,12 @@
         </el-table-column>
         <el-table-column label="操作" width="180px">
           <template slot-scope="scope">
-            <el-button type="primary" size="mini">编辑</el-button>
+            <el-button
+              type="primary"
+              size="mini"
+              @click="editSkuPropBtn(scope.row.pk)"
+              >编辑</el-button
+            >
             <el-button
               type="warning"
               size="mini"
@@ -86,6 +101,7 @@
       :dialogVisible="dialogVisible"
       :commodityList="commodityList"
       :permission="permission"
+      :pk="pk"
       @closeDialog="closeDialog"
       @refresh="getSkuProp"
     ></SkuPropDetail>
@@ -113,6 +129,7 @@ export default {
       multipleSelection: [], // sku复选框
       dialogVisible: false, // 显示弹框
       commodityList: [], // 商品列表
+      pk: -1, // sku类目id值
     }
   },
   components: { SkuPropDetail },
@@ -190,6 +207,12 @@ export default {
           type: 'error',
         })
       }
+    },
+
+    // 修改sku类目数据
+    editSkuPropBtn(id) {
+      this.pk = id
+      this.dialogVisible = true
     },
     // 关闭dialog
     closeDialog() {

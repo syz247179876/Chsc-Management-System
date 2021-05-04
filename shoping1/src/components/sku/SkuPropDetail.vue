@@ -83,6 +83,10 @@ export default {
       type: Number,
       default: 0,
     },
+    pk: {
+      type: Number,
+      default: -1,
+    },
   },
   data() {
     return {
@@ -96,6 +100,33 @@ export default {
       inputVisible: false, // 是否显示输入框
       skuValue: '', // sku类目值
     }
+  },
+  watch: {
+    pk(newValue, oldValue) {
+      if (newValue > 0) {
+        // 根据id获取对应类目数据，替换skuPropForm和skuValues
+        this.$http
+          .get('/seller/chsc/apis/sku-property/?pk=' + newValue, {
+            headers: { Permission: this.permission },
+          })
+          .then((res) => {
+            let data = res.data
+            this.skuPropForm.pk = data.pk
+            this.skuPropForm.name = data.name
+            for (let index in data.values) {
+              this.skuValues.push(data.values[index].value)
+            }
+            this.skuPropForm.sku_values = data.values
+          })
+          .catch((err) => {
+            this.$message({
+              message: '获取sku数据失败',
+              showClose: true,
+              type: 'error',
+            })
+          })
+      }
+    },
   },
   methods: {
     // 关闭dialog，发送父组件，修改dialogVisible值为fasle
