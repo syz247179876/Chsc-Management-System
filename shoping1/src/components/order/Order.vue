@@ -40,7 +40,7 @@
           <template slot-scope="props">
             <el-form label-position="left" block class="demo-table-expand">
               <el-form-item label="订单号:">
-                <span>{{ props.row.commodity_name }}</span>
+                <span>{{ props.row.order_id }}</span>
               </el-form-item>
               <el-form-item label="商品名称:">
                 <span>{{ props.row.commodity_name }}</span>
@@ -112,7 +112,7 @@
             <el-button
               type="warning"
               size="mini"
-              @click="deleteGoodsBtn(scope.row.pk)"
+              @click="deleteOrderBtn(scope.row.pk)"
               >删除</el-button
             >
           </template>
@@ -158,7 +158,9 @@ export default {
   methods: {
     // 异步获取订单数据
     async getOrderSeller() {
-      const res = await this.$http.get('/order/chsc/apis/order/seller/')
+      const res = await this.$http.get('/order/chsc/apis/order/seller/', {
+        headers: { Permission: this.permission },
+      })
       if (res.status === 200) {
         this.orderList = res.data.data
         this.count = res.data.count
@@ -178,26 +180,32 @@ export default {
       }
       const res = await this.$http.delete(
         '/order/chsc/apis/order/delete-multiple/',
-        { data: { pk_list: data, identity: 1 } }
+        {
+          data: { pk_list: data, identity: 1 },
+          headers: { Permission: this.permission },
+        }
       )
       this.getOrderSeller()
     },
 
     // 单删订单
-    async deleteGoodsBtn(id) {
+    async deleteOrderBtn(id) {
       const res = await this.$http.delete(
-        '/order/chsc/apis/order/' + id + '/?identity=1'
+        '/order/chsc/apis/order/' + id + '/?identity=1',
+        { headers: { Permission: this.permission } }
       )
       if (res.status === 200 && res.data.code === 1018) {
         this.$message({
           message: '删除成功',
+          showClose: true,
           type: 'success',
         })
         this.getOrderSeller()
       } else {
         this.$message({
           message: '删除失败',
-          type: 'fail',
+          showClose: true,
+          type: 'error',
         })
       }
     },
