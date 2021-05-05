@@ -8,9 +8,13 @@
       :before-close="handleClose"
     >
       <!-- 有效Sku表单 -->
-      <el-form ref="skuForm" :model="skuForm" label-width="80px">
+      <el-form ref="skuForm" :model="skuForm" label-width="130px">
         <el-form-item label="商品" prop="commodity">
-          <el-select v-model="skuForm.commodity" placeholder="请选择商品">
+          <el-select
+            v-model="skuForm.commodity"
+            filterable
+            placeholder="请选择商品"
+          >
             <el-option
               v-for="item in commodityList"
               :key="item.pk"
@@ -27,58 +31,69 @@
             placeholder="卡其色4XL码潮流的男士衬衫"
           ></el-input>
         </el-form-item>
-
         <el-form-item label="sku原价" prop="price">
-          <el-input v-model="skuForm.price" placeholder="0.01"></el-input>
+          <el-input-number
+            v-model="skuForm.price"
+            :percision="2"
+            :step="0.1"
+            :min="0.01"
+            :max="9999999"
+          ></el-input-number>
         </el-form-item>
-        <el-form-item lang="sku优惠价" prop="favourable_price">
-          <el-input
+
+        <el-form-item label="sku优惠价" prop="favourable_price">
+          <el-input-number
             v-model="skuForm.favourable_price"
             placeholder="0.01"
-          ></el-input>
+            :precision="2"
+            :step="0.1"
+            :min="0.01"
+            :max="9999999"
+          ></el-input-number>
         </el-form-item>
 
         <el-form-item label="sku有效属性值" prop="properties_w">
-          <el-tag
-            v-for="(value, index) in skuValues"
-            :key="index"
-            closable
-            :disable-transitions="false"
-            @close="deleteTag(value)"
+          <el-select
+            v-model="skuValues"
+            multiple
+            placeholder="请选择sku类目属性"
+            filterable
           >
-            {{ value }}
-          </el-tag>
-          <el-input
-            class="input-new-tag"
-            v-if="inputVisible"
-            v-model="skuValue"
-            ref="skuValue"
-            size="small"
-            @keyup.enter.native="handleInputConfirm"
-            @blur="handleInputConfirm"
-          >
-          </el-input>
-          <el-button
-            v-else
-            class="button-new-tag"
-            size="small"
-            @click="showInput"
-            >+ 点击添加</el-button
-          >
+            <el-option-group
+              v-for="group in skuPropList"
+              :key="group.pk"
+              :label="group.name"
+            >
+              <el-option
+                v-for="item in group.values"
+                :key="item.pk"
+                :label="item.value"
+                :value="group.name + ':' + item.value"
+              >
+              </el-option>
+            </el-option-group>
+          </el-select>
+        </el-form-item>
 
-          <el-form-item lang="sku库存" prop="stock">
-            <el-input v-model="skuForm.stock" placeholder="0"></el-input>
-          </el-form-item>
+        <el-form-item label="sku库存" prop="stock">
+          <el-input-number
+            v-model="skuForm.stock"
+            placeholder="1"
+            :precision="0"
+            :step="1"
+            :min="1"
+            :max="999999"
+          ></el-input-number>
+        </el-form-item>
 
-          <el-form-item lang="sku状态" prop="status">
-            <el-input v-model="skuForm.status" placeholder="0"></el-input>
-          </el-form-item>
+        <el-form-item label="sku状态" prop="status">
+          <el-switch v-model="skuForm.status"></el-switch>
+        </el-form-item>
 
-          <el-form-item>
-            <el-button @click="cancel">取 消</el-button>
-            <el-button type="primary" @click="save">保 存</el-button>
-            <el-button @click="resetForm('skuPropForm')">重置</el-button>
-          </el-form-item>
+        <el-form-item>
+          <el-button @click="cancel">取 消</el-button>
+          <el-button type="primary" @click="save">保 存</el-button>
+          <el-button @click="resetForm('skuForm')">重置</el-button>
         </el-form-item>
       </el-form>
     </el-dialog>
@@ -88,11 +103,59 @@
 <script>
 export default {
   name: 'SkuEffcientDetail',
-  props: {},
+  props: {
+    dialogVisible: {
+      type: Boolean,
+      default: false,
+    },
+    commodityList: {
+      type: Array,
+      default: new Array(),
+    },
+    permission: {
+      type: Number,
+      default: 0,
+    },
+    skuPropList: {
+      type: Array,
+      default: new Array(),
+    },
+    pk: {
+      type: Number,
+      default: -1,
+    },
+  },
+  watch: {
+    pk(newValue, oldValue) {
+      if (newValue > 0) {
+        // 根据id获取对应类目数据，替换skuPropForm和skuValues
+        this.$http
+          .get('/seller/chsc/apis/sku-property/?pk=' + newValue, {
+            headers: { Permission: this.permission },
+          })
+          .then((res) => {
+            let data = res.data
+            this.skuForm.pk = data.pk
+            this.skuForm.name = data.name
+            for (let index in data.values) {
+              this.skuValues.push(data.values[index].value)
+            }
+            this.skuForm.sku_values = data.values
+          })
+          .catch((err) => {
+            this.$message({
+              message: '获取sku数据失败',
+              showClose: true,
+              type: 'error',
+            })
+          })
+      }
+    },
+  },
   data() {
     return {
       skuForm: {
-        commodity: 0, // 商品id
+        commodity: '', // 商品id
         name: '', // sku名
         status: true, // sku状态
         sid: '', // sku中类目值id所组成的字符串
@@ -101,12 +164,68 @@ export default {
         properties_w: {}, // sku类目值
         stock: 0, // sku当前库存
       },
+      skuValues: [], // sku类目值数组
+      inputVisible: false, // 是否显示输入框
+      skuValue: '', // sku类目值
     }
   },
   methods: {
     // 关闭dialog，发送父组件，修改dialogVisible值为fasle
     handleClose() {
       this.$emit('closeDialog')
+    },
+
+    // 保存数据
+    async save() {
+      let data = {
+        price: this.skuForm['price'],
+        favourable_price: this.skuForm['favourable_price'],
+        status: this.skuForm['status'],
+        commodity: this.skuForm['commodity'],
+        stock: this.skuForm['stock'],
+        name: this.skuForm['name'],
+      }
+      let properties = {}
+      for (let index in this.skuValues) {
+        let skuProp = this.skuValues[index].split(':')
+        properties[skuProp[0]] = skuProp[1]
+      }
+      data['properties_w'] = properties
+      console.log(data)
+      console.log(this.skuValues)
+      // const res = await this.$http.post(
+      //   '/seller/chsc/apis/sku-property/',
+      //   data,
+      //   {
+      //     headers: { Permission: 100008 },
+      //   }
+      // )
+      // if (res.status === 200 && res.data.code === 1049) {
+      //   this.$message({
+      //     message: '创建成功',
+      //     showClose: true,
+      //     type: 'success',
+      //   })
+      //   this.$emit('refresh') // 再次请求数据进行刷新
+      // } else {
+      //   this.$message({
+      //     message: res.data.detail,
+      //     showClose: true,
+      //     type: 'error',
+      //   })
+      // }
+
+      // this.$emit('closeDialog')
+    },
+
+    // 关闭弹窗
+    cancel() {
+      this.$emit('closeDialog')
+    },
+
+    // 重置
+    resetForm(formName) {
+      this.$refs[formName].resetFields()
     },
   },
 }

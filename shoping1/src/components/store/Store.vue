@@ -89,7 +89,7 @@ export default {
         pagesize: 10,
       },
       // 商品列表数据
-      goodList: [],
+      Store: [],
       // 商品列表总数
       total: 0,
       permission: 100002,

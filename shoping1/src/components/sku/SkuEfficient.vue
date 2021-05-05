@@ -103,13 +103,42 @@
         :background="true"
       >
       </el-pagination> -->
+      <SkuEffcientDetail
+        :dialogVisible="dialogVisible"
+        :commodityList="commodityList"
+        :permission="permission"
+        :skuPropList="skuPropList"
+        :pk="pk"
+        @closeDialog="closeDialog"
+        @refresh="refresh"
+      ></SkuEffcientDetail>
     </div>
   </div>
 </template>
 
 <script>
+const SkuEffcientDetail = () => import('@/components/sku/SkuEffcientDetail')
 export default {
   name: 'SkuEfficient',
+  components: { SkuEffcientDetail },
+  props: {
+    skuList: {
+      type: Array,
+      default: new Array(),
+    },
+    skuCount: {
+      type: Number,
+      default: 0,
+    },
+    commodityList: {
+      type: Array,
+      default: new Array(),
+    },
+    skuPropList: {
+      type: Array,
+      default: new Array(),
+    },
+  },
   data() {
     return {
       // 查询商品列表参数
@@ -118,30 +147,17 @@ export default {
         pagenum: 1,
         pagesize: 10,
       },
-      // 商品列表数据
-      skuList: [],
       // 商品列表总数
       total: 0,
       permission: 100008,
       count: 0,
       multipleSelection: [], // sku复选框
+      dialogVisible: false, // dialog状态
+      pk: -1, // sku的id
     }
   },
-  created() {
-    this.getSkuData()
-  },
+  created() {},
   methods: {
-    // 获取商家的sku数据
-    async getSkuData() {
-      const res = await this.$http.get('/seller/chsc/apis/sku/', {
-        headers: { Permission: this.permission },
-      })
-      if (res.status == 200) {
-        this.skuList = res.data.data
-        this.count = res.data.count
-      }
-    },
-
     // 勾选/取消复选框
     handleSelectionChange(val) {
       this.multipleSelection = val
@@ -163,7 +179,7 @@ export default {
           showClose: true,
           type: 'success',
         })
-        this.getSkuData()
+        this.$emit('getSkuData')
       } else {
         this.$message({
           message: res.data.detail,
@@ -187,7 +203,7 @@ export default {
           showClose: true,
           type: 'success',
         })
-        this.getSkuData()
+        this.$emit('getSkuData')
       } else {
         this.$message({
           message: res.data.detail,
@@ -198,7 +214,19 @@ export default {
     },
 
     // 弹出增加sku弹框
-    openAddSku() {},
+    openAddSku() {
+      this.dialogVisible = true
+    },
+
+    // 关闭弹窗，修改状态
+    closeDialog() {
+      this.dialogVisible = false
+    },
+
+    // 刷新数据集
+    refresh() {
+      this.$emit('getSkuData')
+    },
   },
 }
 </script>

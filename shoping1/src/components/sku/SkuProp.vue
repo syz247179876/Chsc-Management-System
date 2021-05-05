@@ -103,7 +103,7 @@
       :permission="permission"
       :pk="pk"
       @closeDialog="closeDialog"
-      @refresh="getSkuProp"
+      @refresh="refresh"
     ></SkuPropDetail>
   </div>
 </template>
@@ -112,6 +112,20 @@
 const SkuPropDetail = () => import('@/components/sku/SkuPropDetail')
 export default {
   name: 'SkuProp',
+  props: {
+    skuPropList: {
+      type: Array,
+      default: new Array(),
+    },
+    skuPropCount: {
+      type: Number,
+      default: 0,
+    },
+    commodityList: {
+      type: Array,
+      default: new Array(),
+    },
+  },
   data() {
     return {
       // 查询商品列表参数
@@ -120,35 +134,18 @@ export default {
         pagenum: 1,
         pagesize: 10,
       },
-      // 商品列表数据
-      skuPropList: [],
       // 商品列表总数
       total: 0,
       permission: 100008,
       count: 0,
       multipleSelection: [], // sku复选框
       dialogVisible: false, // 显示弹框
-      commodityList: [], // 商品列表
       pk: -1, // sku类目id值
     }
   },
   components: { SkuPropDetail },
-  created() {
-    this.getSkuProp()
-  },
+  created() {},
   methods: {
-    // 获取sku类目数据
-    async getSkuProp() {
-      const res = await this.$http.get('/seller/chsc/apis/sku-property/', {
-        headers: { Permission: this.permission },
-      })
-      if (res.status === 200) {
-        this.skuPropList = res.data.data
-        this.count = res.data.count
-        this.commodityList = res.data.commodity
-      }
-    },
-
     // 勾选/取消复选框
     handleSelectionChange(val) {
       this.multipleSelection = val
@@ -168,7 +165,7 @@ export default {
           showClose: true,
           type: 'success',
         })
-        this.getSkuProp()
+        this.$emit('getSkuProp')
       } else {
         this.$message({
           message: res.data.detail,
@@ -199,7 +196,7 @@ export default {
           showClose: true,
           type: 'success',
         })
-        this.getSkuProp()
+        this.$emit('getSkuProp')
       } else {
         this.$message({
           message: res.data.detail,
@@ -217,6 +214,11 @@ export default {
     // 关闭dialog
     closeDialog() {
       this.dialogVisible = false
+    },
+
+    // 刷新数据集
+    refresh() {
+      this.$emit('getSkuProp')
     },
   },
 }

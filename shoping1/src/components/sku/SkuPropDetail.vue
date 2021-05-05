@@ -12,7 +12,8 @@
         <el-form-item label="商品" prop="commodity">
           <el-select
             v-model="skuPropForm.commodity"
-            placeholder="请选择活动区域"
+            placeholder="请选择商品"
+            filterable
           >
             <el-option
               v-for="item in commodityList"
@@ -54,7 +55,7 @@
             class="button-new-tag"
             size="small"
             @click="showInput"
-            >+ New Tag</el-button
+            >+ 点击添加</el-button
           >
         </el-form-item>
         <el-form-item>
