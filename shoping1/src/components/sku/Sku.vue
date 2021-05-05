@@ -6,21 +6,27 @@
       <el-breadcrumb-item>Sku管理</el-breadcrumb-item>
       <el-breadcrumb-item>Sku列表</el-breadcrumb-item>
     </el-breadcrumb>
-    有效Sku列表管理
-    <SkuEfficient
-      :skuList="skuList"
-      :skuCount="skuCount"
-      :commodityList="commodityList"
-      :skuPropList="skuPropList"
-      @getSkuData="getSkuData"
-    ></SkuEfficient>
-    Sku类目管理
-    <SkuProp
-      :skuPropList="skuPropList"
-      :skuPropCount="skuPropCount"
-      :commodityList="commodityList"
-      @getSkuProp="getSkuProp"
-    ></SkuProp>
+
+    <!-- 标签页 -->
+    <el-tabs v-model="activeName">
+      <el-tab-pane label="有效sku管理" name="有效sku管理">
+        <SkuEfficient
+          :skuList="skuList"
+          :skuCount="skuCount"
+          :commodityList="commodityList"
+          :skuPropList="skuPropList"
+          @getSkuData="getSkuData"
+        ></SkuEfficient>
+      </el-tab-pane>
+      <el-tab-pane label="Sku属性类目管理" name="Sku属性类目管理">
+        <SkuProp
+          :skuPropList="skuPropList"
+          :skuPropCount="skuPropCount"
+          :commodityList="commodityList"
+          @getSkuProp="getSkuProp"
+        ></SkuProp>
+      </el-tab-pane>
+    </el-tabs>
   </div>
 </template>
 
@@ -32,6 +38,7 @@ export default {
   components: { SkuEfficient, SkuProp },
   data() {
     return {
+      activeName: '有效sku管理',
       permission: 100008,
       skuList: [], // sku有效数据集
       skuCount: 0, // sku有效数据的个数
