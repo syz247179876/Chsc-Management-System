@@ -9,77 +9,28 @@
 
     <!-- 卡片视图区域 -->
     <el-card>
-      <!-- 搜索框和添加商品区域 -->
-      <el-row :gutter="20">
-        <el-col :span="8">
-          <!-- 搜索框 -->
-          <el-input
-            placeholder="请输入内容"
-            v-model="queryInfo.query"
-            clearable
-            @clear="getGoodList"
-          >
-            <el-button
-              slot="append"
-              icon="el-icon-search"
-              @click="getGoodList"
-            ></el-button>
-          </el-input>
-        </el-col>
-        <el-col :span="4">
-          <el-button type="primary" @click="addGoods">添加商品</el-button>
-        </el-col>
-      </el-row>
-      <!-- 商品表格 -->
-      <el-table :data="goodList" border stripe>
-        <el-table-column type="index"></el-table-column>
-        <el-table-column
-          label="商品名称"
-          prop="commodity_name"
-        ></el-table-column>
-        <el-table-column
-          label="商品价格"
-          prop="price"
-          width="85px"
-        ></el-table-column>
-        <el-table-column
-          label="优惠价"
-          prop="favourable_price"
-          width="85px"
-        ></el-table-column>
-        <el-table-column label="简要介绍" prop="intro" width="190px">
-        </el-table-column>
-        <el-table-column label="操作" width="180px">
-          <template slot-scope="scope">
-            <el-button type="primary" size="mini">编辑</el-button>
-            <el-button
-              type="warning"
-              size="mini"
-              @click="deleteGoodsBtn(scope.row.goods_id)"
-              >删除</el-button
-            >
-          </template>
-        </el-table-column>
-      </el-table>
-      <!-- 底部分页 -->
-      <el-pagination
-        @size-change="handleSizeChange"
-        @current-change="handleCurrentChange"
-        :current-page="queryInfo.pagenum"
-        :page-sizes="[5, 10, 15, 20]"
-        :page-size="queryInfo.pagesize"
-        layout="total, sizes, prev, pager, next, jumper"
-        :total="count"
-        :background="true"
-      >
-      </el-pagination>
+      <el-tabs v-model="activeName">
+        <el-tab-pane label="用户信息" name="sellerInfo">
+          <SellerInfo :sellerInfo="sellerInfo"></SellerInfo>
+        </el-tab-pane>
+        <el-tab-pane label="店铺信息" name="sellerStore">
+          <SellerStore :sellerStore="sellerStore"></SellerStore>
+        </el-tab-pane>
+        <el-tab-pane label="角色信息" name="sellerRole">
+          <SellerRole :sellerRole="sellerRole"></SellerRole
+        ></el-tab-pane>
+      </el-tabs>
     </el-card>
   </div>
 </template>
 
 <script>
+const SellerStore = () => import('@/components/store/SellerStore')
+const SellerInfo = () => import('@/components/user/SellerInfo')
+const SellerRole = () => import('@/components/power/SellerRole')
 export default {
   name: 'Store',
+  components: { SellerInfo, SellerRole, SellerStore },
   data() {
     return {
       // 查询商品列表参数
@@ -88,13 +39,38 @@ export default {
         pagenum: 1,
         pagesize: 10,
       },
-      // 商品列表数据
-      Store: [],
       // 商品列表总数
       total: 0,
       permission: 100002,
       count: 0,
+      activeName: 'sellerInfo',
+      sellerRole: {}, // 商家角色信息
+      sellerStore: {}, // 商家店铺信息
+      sellerInfo: {}, // 商家信息
     }
+  },
+  created() {
+    this.getSellerStoreInfo()
+  },
+  methods: {
+    // 获取商家店铺+角色+个人信息
+    async getSellerStoreInfo() {
+      const res = await this.$http.get('/seller/chsc/apis/store/', {
+        headers: { Permission: this.permission },
+      })
+      if (res.status === 200) {
+        let data = res.data
+        this.sellerInfo = data.user
+        this.sellerStore = data.store
+        this.sellerRole = data.role
+      } else {
+        this.$message({
+          message: res.data.detail,
+          showClose: true,
+          type: 'error',
+        })
+      }
+    },
   },
 }
 </script>
