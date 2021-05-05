@@ -62,6 +62,7 @@
         <el-table-column
           label="商品名"
           prop="commodity_name"
+          width="150px"
           sortable
         ></el-table-column>
         <el-table-column label="sku名称" prop="name"></el-table-column>
@@ -78,6 +79,11 @@
           sortable
         ></el-table-column>
         <el-table-column label="sku库存" prop="stock" width="190px" sortable>
+        </el-table-column>
+        <el-table-column label="sku状态" prop="status" width="100px" sortable>
+          <template slot-scope="scope">
+            <el-switch v-model="scope.row.status" disabled> </el-switch>
+          </template>
         </el-table-column>
         <el-table-column label="操作" width="180px">
           <template slot-scope="scope">
