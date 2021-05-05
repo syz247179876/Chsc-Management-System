@@ -68,7 +68,7 @@
                 v-for="item in group.values"
                 :key="item.pk"
                 :label="item.value"
-                :value="group.name + ':' + item.value"
+                :value="group.name + ':' + item.value + ':' + item.pk"
               >
               </el-option>
             </el-option-group>
@@ -185,37 +185,35 @@ export default {
         stock: this.skuForm['stock'],
         name: this.skuForm['name'],
       }
-      let properties = {}
+      let properties = {} // sku属性键值对map
+      let sidList = [] // sid列表
       for (let index in this.skuValues) {
         let skuProp = this.skuValues[index].split(':')
         properties[skuProp[0]] = skuProp[1]
+        sidList.push(skuProp[2])
       }
       data['properties_w'] = properties
-      console.log(data)
-      console.log(this.skuValues)
-      // const res = await this.$http.post(
-      //   '/seller/chsc/apis/sku-property/',
-      //   data,
-      //   {
-      //     headers: { Permission: 100008 },
-      //   }
-      // )
-      // if (res.status === 200 && res.data.code === 1049) {
-      //   this.$message({
-      //     message: '创建成功',
-      //     showClose: true,
-      //     type: 'success',
-      //   })
-      //   this.$emit('refresh') // 再次请求数据进行刷新
-      // } else {
-      //   this.$message({
-      //     message: res.data.detail,
-      //     showClose: true,
-      //     type: 'error',
-      //   })
-      // }
+      data['sid'] = sidList.join('-')
+      // 发送创建有效sku请求
+      const res = await this.$http.post('/seller/chsc/apis/sku/', data, {
+        headers: { Permission: 100008 },
+      })
+      if (res.status === 200 && res.data.code === 1066) {
+        this.$message({
+          message: '创建成功',
+          showClose: true,
+          type: 'success',
+        })
+        this.$emit('refresh') // 再次请求数据进行刷新
+      } else {
+        this.$message({
+          message: res.data.detail,
+          showClose: true,
+          type: 'error',
+        })
+      }
 
-      // this.$emit('closeDialog')
+      this.$emit('closeDialog')
     },
 
     // 关闭弹窗
