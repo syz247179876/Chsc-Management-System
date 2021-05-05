@@ -81,7 +81,12 @@
         </el-table-column>
         <el-table-column label="操作" width="180px">
           <template slot-scope="scope">
-            <el-button type="primary" size="mini">编辑</el-button>
+            <el-button
+              type="primary"
+              size="mini"
+              @click="editSkuBtn(scope.row.pk)"
+              >编辑</el-button
+            >
             <el-button
               type="warning"
               size="mini"
@@ -211,6 +216,12 @@ export default {
           type: 'error',
         })
       }
+    },
+
+    // 修改sku类目数据
+    editSkuBtn(id) {
+      this.pk = id
+      this.dialogVisible = true
     },
 
     // 弹出增加sku弹框

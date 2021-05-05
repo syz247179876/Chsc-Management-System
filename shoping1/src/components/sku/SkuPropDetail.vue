@@ -114,6 +114,8 @@ export default {
             let data = res.data
             this.skuPropForm.pk = data.pk
             this.skuPropForm.name = data.name
+            this.skuPropForm.commodity = data.cid
+            this.skuValues = []
             for (let index in data.values) {
               this.skuValues.push(data.values[index].value)
             }
@@ -166,6 +168,7 @@ export default {
           type: 'error',
         })
       }
+      this.resetForm('skuPropForm')
       this.$emit('closeDialog')
     },
 

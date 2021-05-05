@@ -92,7 +92,10 @@
 
         <el-form-item>
           <el-button @click="cancel">取 消</el-button>
-          <el-button type="primary" @click="save">保 存</el-button>
+          <el-button type="primary" v-if="pk > 0" @click="update"
+            >保 存</el-button
+          >
+          <el-button type="primary" v-else @click="create">保 存</el-button>
           <el-button @click="resetForm('skuForm')">重置</el-button>
         </el-form-item>
       </el-form>
@@ -130,19 +133,33 @@ export default {
       if (newValue > 0) {
         // 根据id获取对应类目数据，替换skuPropForm和skuValues
         this.$http
-          .get('/seller/chsc/apis/sku-property/?pk=' + newValue, {
+          .get('/seller/chsc/apis/sku/?pk=' + newValue, {
             headers: { Permission: this.permission },
           })
           .then((res) => {
             let data = res.data
-            this.skuForm.pk = data.pk
+            this.skuForm.sid = data.sid
             this.skuForm.name = data.name
-            for (let index in data.values) {
-              this.skuValues.push(data.values[index].value)
+            this.skuForm.status = data.status
+            this.skuForm.price = data.price
+            this.skuForm.favourable_price = data.favourable_price
+            this.skuForm.commodity = data.cid
+            this.properties_w = data.properties_r
+            this.skuForm.stock = data.stock
+            this.sidList = data.sid.split('-')
+            this.skuValues = []
+            let index = 0
+
+            // 生成已选的类目属性键值对数据
+            for (let key in data.properties_r) {
+              this.skuValues.push(
+                key + ':' + data.properties_r[key] + ':' + this.sidList[index]
+              )
+              index += 1
             }
-            this.skuForm.sku_values = data.values
           })
           .catch((err) => {
+            console.log(err)
             this.$message({
               message: '获取sku数据失败',
               showClose: true,
@@ -175,8 +192,8 @@ export default {
       this.$emit('closeDialog')
     },
 
-    // 保存数据
-    async save() {
+    // 创建数据
+    async create() {
       let data = {
         price: this.skuForm['price'],
         favourable_price: this.skuForm['favourable_price'],
@@ -212,7 +229,48 @@ export default {
           type: 'error',
         })
       }
+      this.resetForm('skuForm')
+      this.$emit('closeDialog')
+    },
 
+    // 更新数据
+    async update() {
+      let data = {
+        pk: this.pk,
+        price: this.skuForm['price'],
+        favourable_price: this.skuForm['favourable_price'],
+        status: this.skuForm['status'],
+        commodity: this.skuForm['commodity'],
+        stock: this.skuForm['stock'],
+        name: this.skuForm['name'],
+      }
+      let properties = {} // sku属性键值对map
+      let sidList = [] // sid列表
+      for (let index in this.skuValues) {
+        let skuProp = this.skuValues[index].split(':')
+        properties[skuProp[0]] = skuProp[1]
+        sidList.push(skuProp[2])
+      }
+      data['properties_w'] = properties
+      data['sid'] = sidList.join('-')
+      // 发送更新有效sku请求
+      const res = await this.$http.put('/seller/chsc/apis/sku/', data, {
+        headers: { Permission: 100008 },
+      })
+      if (res.status === 200 && res.data.code === 1066) {
+        this.$message({
+          message: '更新成功',
+          showClose: true,
+          type: 'success',
+        })
+        this.$emit('refresh') // 再次请求数据进行刷新
+      } else {
+        this.$message({
+          message: res.data.detail,
+          showClose: true,
+          type: 'error',
+        })
+      }
       this.$emit('closeDialog')
     },
 
