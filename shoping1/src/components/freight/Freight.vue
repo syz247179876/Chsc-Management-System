@@ -22,15 +22,22 @@
           </el-input>
         </el-col>
         <el-col :span="4">
-          <el-button type="primary">添加商品</el-button>
+          <el-button type="primary" @click="openAddFreight"
+            >添加运费模板</el-button
+          >
         </el-col>
       </el-row>
       <!-- 商品表格 -->
       <el-table :data="freightList" border stripe>
         <el-table-column type="index"></el-table-column>
-        <el-table-column label="运费模板名" prop="name"></el-table-column>
         <el-table-column
-          label="是否免运费"
+          label="运费模板名"
+          prop="name"
+          width="200px"
+        ></el-table-column>
+        <el-table-column label="是否" prop="str_is_free"></el-table-column>
+        <el-table-column
+          label="是否包邮"
           prop="str_is_free"
           width="85px"
         ></el-table-column>
@@ -41,7 +48,12 @@
         ></el-table-column>
         <el-table-column label="操作" width="180px">
           <template slot-scope="scope">
-            <el-button type="primary" size="mini">编辑</el-button>
+            <el-button
+              type="primary"
+              size="mini"
+              @click="editFreightbtn(scope.row.pk)"
+              >编辑</el-button
+            >
             <el-button
               type="warning"
               size="mini"
@@ -63,13 +75,22 @@
         :background="true"
       >
       </el-pagination> -->
+      <FreightDetail
+        :pk="pk"
+        :permission="permission"
+        @closeDialog="closeDialog"
+        :dialogVisible="dialogVisible"
+        @refresh="refresh"
+      ></FreightDetail>
     </el-card>
   </div>
 </template>
 
 <script>
+const FreightDetail = () => import('@/components/freight/FreightDetail')
 export default {
   name: 'Freight',
+  components: { FreightDetail },
   data() {
     return {
       // 查询商品列表参数
@@ -84,6 +105,8 @@ export default {
       total: 0,
       permission: 100007,
       count: 0,
+      dialogVisible: false, // 是否开启弹框
+      pk: -1, // 运费模板id
     }
   },
   created() {
@@ -120,6 +143,26 @@ export default {
           type: 'fail',
         })
       }
+    },
+
+    // 打开添加运费模板的dialog
+    openAddFreight() {
+      this.dialogVisible = true
+    },
+    // 关闭弹窗，修改状态
+    closeDialog() {
+      this.dialogVisible = false
+    },
+
+    // 刷新数据集
+    refresh() {
+      this.getFreightList()
+    },
+
+    // 进入编辑dialog
+    editFreightbtn(id) {
+      this.pk = id
+      this.dialogVisible = true
     },
   },
 }

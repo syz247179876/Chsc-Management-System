@@ -91,11 +91,10 @@
         </el-form-item>
 
         <el-form-item>
-          <el-button @click="cancel">取 消</el-button>
           <el-button type="primary" v-if="pk > 0" @click="update"
             >保 存</el-button
           >
-          <el-button type="primary" v-else @click="create">保 存</el-button>
+          <el-button type="primary" v-else @click="create">立即 创建</el-button>
           <el-button @click="resetForm('skuForm')">重置</el-button>
         </el-form-item>
       </el-form>
@@ -129,6 +128,7 @@ export default {
     },
   },
   watch: {
+    // 当pk传进来的是正数，表示编辑，先请求获取该数据
     pk(newValue, oldValue) {
       if (newValue > 0) {
         // 根据id获取对应类目数据，替换skuPropForm和skuValues
@@ -159,7 +159,6 @@ export default {
             }
           })
           .catch((err) => {
-            console.log(err)
             this.$message({
               message: '获取sku数据失败',
               showClose: true,
