@@ -1,13 +1,17 @@
 <template>
   <div id="SellerRole">
     <div id="card">
-      <el-form ref="form" :model="form" label-width="150px">
+      <el-form ref="sellerRole" :model="sellerRole" label-width="150px">
         <el-form-item label="角色名">
-          <el-input v-model="form.role_name" style="width: 150px" disabled></el-input>
+          <el-input
+            v-model="sellerRole.role_name"
+            style="width: 150px"
+            disabled
+          ></el-input>
         </el-form-item>
         <el-form-item label="角色描述">
           <el-input
-            v-model="form.description"
+            v-model="sellerRole.description"
             type="textarea"
             :rows="4"
             style="width: 300px"
@@ -15,7 +19,7 @@
           ></el-input>
         </el-form-item>
         <el-form-item label="角色编号">
-          <el-input v-model="form.rid" style="width: 150px" disabled></el-input>
+          <el-input v-model="sellerRole.rid" style="width: 150px" disabled></el-input>
         </el-form-item>
       </el-form>
     </div>

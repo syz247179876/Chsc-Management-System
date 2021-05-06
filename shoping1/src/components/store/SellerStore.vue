@@ -2,24 +2,24 @@
   <div id="SellerStore">
     <div class="card">
       <el-form
-        ref="form"
-        :model="form"
+        ref="sellerStore"
+        :model="sellerStore"
         label-width="150px"
         :label-position="labelPosition"
       >
         <el-form-item label="店铺名">
-          <el-input v-model="form.name" style="width: 150px"></el-input>
+          <el-input v-model="sellerStore.name" style="width: 150px"></el-input>
         </el-form-item>
         <el-form-item label="店铺类型">
           <el-input
-            v-model="form.type"
+            v-model="sellerStore.type"
             style="width: 150px"
             disabled
           ></el-input>
         </el-form-item>
         <el-form-item label="店铺介绍">
           <el-input
-            v-model="form.intro"
+            v-model="sellerStore.intro"
             type="textarea"
             :rows="4"
             maxlength="50"
@@ -29,20 +29,24 @@
         </el-form-item>
         <el-form-item label="店铺积分">
           <el-input-number
-            v-model="form.integral"
+            v-model="sellerStore.integral"
             :disabled="true"
           ></el-input-number>
         </el-form-item>
         <el-form-item label="店铺是否被审核">
-          <el-switch v-model="form.is_checked" disabled></el-switch>
+          <el-switch v-model="sellerStore.is_checked" disabled></el-switch>
         </el-form-item>
 
         <el-form-item label="店铺logo">
-          <el-avatar shape="square" :size="100" :src="form.logo"></el-avatar>
+          <el-avatar
+            shape="square"
+            :size="100"
+            :src="sellerStore.logo"
+          ></el-avatar>
         </el-form-item>
         <el-form-item label="店铺描述评分">
           <el-rate
-            v-model="form.description_score"
+            v-model="sellerStore.description_score"
             disabled
             show-score
             text-color="#ff9900"
@@ -52,7 +56,7 @@
         </el-form-item>
         <el-form-item label="店铺服务评分">
           <el-rate
-            v-model="form.service_score"
+            v-model="sellerStore.service_score"
             disabled
             show-score
             text-color="#ff9900"
@@ -62,7 +66,7 @@
         </el-form-item>
         <el-form-item label="店铺物流评分">
           <el-rate
-            v-model="form.logistics_score"
+            v-model="sellerStore.logistics_score"
             disabled
             show-score
             text-color="#ff9900"
@@ -72,15 +76,14 @@
         </el-form-item>
         <el-form-item label="店铺所在地">
           <el-cascader
-            v-model="form.province"
+            v-model="sellerStore.province"
             :options="citydata"
             :props="{ expandTrigger: 'hover' }"
           ></el-cascader>
         </el-form-item>
 
         <el-form-item>
-          <el-button type="primary">立即创建</el-button>
-          <el-button>取消</el-button>
+          <el-button type="primary" @click="save">保存</el-button>
         </el-form-item>
       </el-form>
     </div>
@@ -95,6 +98,10 @@ export default {
     sellerStore: {
       type: Object,
       default: new Object(),
+    },
+    permission: {
+      type: Number,
+      default: 0,
     },
   },
   data() {
@@ -116,7 +123,20 @@ export default {
       citydata, // 地区数据
     }
   },
-  methods: {},
+
+  created() {
+    this.sellerStore.description_score = parseFloat(
+      this.sellerStore.description_score
+    )
+    this.sellerStore.logistics_score = parseFloat(
+      this.sellerStore.logistics_score
+    )
+    this.sellerStore.service_score = parseFloat(this.sellerStore.service_score)
+  },
+  methods: {
+    // 保存当前数据
+    save() {},
+  },
 }
 </script>
 
