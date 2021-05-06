@@ -46,7 +46,13 @@
                 <span>{{ props.row.commodity_name }}</span>
               </el-form-item>
               <el-form-item label="订单状态:">
-                <span>{{ props.row.status }}</span>
+                <el-switch
+                  v-model="props.row.status"
+                  active-color="#13ce66"
+                  inactive-color="#ff4949"
+                  disabled
+                >
+                </el-switch>
               </el-form-item>
               <el-form-item label="是否审核:">
                 <span>{{
@@ -90,11 +96,6 @@
           width="85px"
         ></el-table-column>
         <el-table-column
-          label="订单状态"
-          prop="status"
-          width="85px"
-        ></el-table-column>
-        <el-table-column
           label="下单时间"
           prop="efficient_time"
           sortable
@@ -105,9 +106,35 @@
         </el-table-column>
         <el-table-column label="sku名称" prop="sku_name" width="150px">
         </el-table-column>
-
-        <el-table-column label="操作" width="180px">
+        <el-table-column label="是否接单" prop="is_checked" width="150px">
           <template slot-scope="scope">
+            <i
+              v-if="scope.row.is_checked"
+              class="el-icon-circle-check font-success"
+            ></i>
+            <i v-else class="el-icon-circle-close font-fail"></i>
+          </template>
+        </el-table-column>
+        <el-table-column label="订单状态" prop="status" width="150px">
+          <template slot-scope="scope">
+            <el-switch
+              v-model="scope.row.status"
+              active-color="#13ce66"
+              inactive-color="#ff4949"
+              disabled
+            >
+            </el-switch>
+          </template>
+        </el-table-column>
+
+        <el-table-column label="操作" width="250px">
+          <template slot-scope="scope">
+            <el-button
+              type="success"
+              size="mini"
+              @click="agreeOrder(scope.row.pk, scope.$index)"
+              >接单</el-button
+            >
             <el-button type="primary" size="mini">编辑</el-button>
             <el-button
               type="warning"
@@ -209,9 +236,45 @@ export default {
         })
       }
     },
+
+    // 接下订单
+    async agreeOrder(id, rowIndex) {
+      const res = await this.$http.put(
+        '/order/chsc/apis/order/' + id + '/reception/',
+        {
+          headers: { Permission: this.permission },
+        }
+      )
+      if (res.status === 200 && res.data.code === 1073) {
+        this.$message({
+          message: res.data.msg,
+          showClose: true,
+          type: 'success',
+        })
+        this.orderList[rowIndex].is_checked = true
+      } else {
+        this.$message({
+          message: '213',
+          showClose: true,
+          type: 'error',
+        })
+      }
+    },
   },
 }
 </script>
 
-<style lang="less" scope>
+<style scoped>
+.font-fail {
+  font-size: 25px;
+  margin-left: 40%;
+  margin-right: 50%;
+  color: red;
+}
+.font-success {
+  font-size: 25px;
+  margin-left: 40%;
+  margin-right: 50%;
+  color: green;
+}
 </style>

@@ -11,13 +11,22 @@
     <el-card>
       <el-tabs v-model="activeName">
         <el-tab-pane label="用户信息" name="sellerInfo">
-          <SellerInfo :sellerInfo="sellerInfo"></SellerInfo>
+          <SellerInfo
+            :sellerInfo="sellerInfo"
+            :permission="permission"
+          ></SellerInfo>
         </el-tab-pane>
         <el-tab-pane label="店铺信息" name="sellerStore">
-          <SellerStore :sellerStore="sellerStore"></SellerStore>
+          <SellerStore
+            :sellerStore="sellerStore"
+            :permission="permission"
+          ></SellerStore>
         </el-tab-pane>
         <el-tab-pane label="角色信息" name="sellerRole">
-          <SellerRole :sellerRole="sellerRole"></SellerRole
+          <SellerRole
+            :sellerRole="sellerRole"
+            :permission="permission"
+          ></SellerRole
         ></el-tab-pane>
       </el-tabs>
     </el-card>

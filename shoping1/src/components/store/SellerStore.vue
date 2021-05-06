@@ -50,7 +50,6 @@
             disabled
             show-score
             text-color="#ff9900"
-            score-template="{value}"
           >
           </el-rate>
         </el-form-item>
@@ -60,7 +59,6 @@
             disabled
             show-score
             text-color="#ff9900"
-            score-template="{value}"
           >
           </el-rate>
         </el-form-item>
@@ -70,7 +68,6 @@
             disabled
             show-score
             text-color="#ff9900"
-            score-template="{value}"
           >
           </el-rate>
         </el-form-item>
@@ -117,14 +114,18 @@ export default {
         description_score: 0, // 描述评分
         service_score: 0, // 服务评分
         logistics_score: 0, // 物流评分
-        province: '', // 店铺所在地
+        province: [], // 店铺所在地数组
       },
       labelPosition: 'left', // 标签对齐方式
       citydata, // 地区数据
     }
   },
-
-  created() {
+  watch: {
+    sellerInfo() {
+      console.log(55555)
+    },
+  },
+  mounted() {
     this.sellerStore.description_score = parseFloat(
       this.sellerStore.description_score
     )
@@ -132,10 +133,35 @@ export default {
       this.sellerStore.logistics_score
     )
     this.sellerStore.service_score = parseFloat(this.sellerStore.service_score)
+    this.sellerStore.province = this.sellerStore.province.split('/')
   },
   methods: {
     // 保存当前数据
-    save() {},
+    async save() {
+      let data = {
+        pk: this.sellerStore.id,
+        name: this.sellerStore.name,
+        intro: this.sellerStore.intro,
+        province: this.sellerStore.province.join('/'),
+      }
+      const res = await this.$http.put('/seller/chsc/apis/info/store/', data, {
+        headers: { Permission: this.permission },
+      })
+
+      if (res.status === 200 && res.data.code === 1072) {
+        this.$message({
+          message: '更新成功',
+          showClose: true,
+          type: 'success',
+        })
+      } else {
+        this.$message({
+          message: res.data.detail,
+          showClose: true,
+          type: 'error',
+        })
+      }
+    },
   },
 }
 </script>

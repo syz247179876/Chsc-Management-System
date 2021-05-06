@@ -99,9 +99,27 @@ export default {
         birthday: this.sellerInfo.birthday,
         sex: this.sellerInfo.sex,
       }
-      const res = await this.$http.put('', data, {
-        headers: { Permssion: this.permission },
-      })
+      const res = await this.$http.put(
+        '/seller/chsc/apis/info/personal/',
+        data,
+        {
+          headers: { Permission: this.permission },
+        }
+      )
+
+      if (res.status === 200 && res.data.code === 1008) {
+        this.$message({
+          message: '更新成功',
+          showClose: true,
+          type: 'success',
+        })
+      } else {
+        this.$message({
+          message: res.data.detail,
+          showClose: true,
+          type: 'error',
+        })
+      }
     },
   },
 }

@@ -8,25 +8,27 @@
     </el-breadcrumb>
 
     <!-- 标签页 -->
-    <el-tabs v-model="activeName">
-      <el-tab-pane label="有效sku管理" name="有效sku管理">
-        <SkuEfficient
-          :skuList="skuList"
-          :skuCount="skuCount"
-          :commodityList="commodityList"
-          :skuPropList="skuPropList"
-          @getSkuData="getSkuData"
-        ></SkuEfficient>
-      </el-tab-pane>
-      <el-tab-pane label="Sku属性类目管理" name="Sku属性类目管理">
-        <SkuProp
-          :skuPropList="skuPropList"
-          :skuPropCount="skuPropCount"
-          :commodityList="commodityList"
-          @getSkuProp="getSkuProp"
-        ></SkuProp>
-      </el-tab-pane>
-    </el-tabs>
+    <div class="card">
+      <el-tabs v-model="activeName">
+        <el-tab-pane label="有效sku管理" name="有效sku管理">
+          <SkuEfficient
+            :skuList="skuList"
+            :skuCount="skuCount"
+            :commodityList="commodityList"
+            :skuPropList="skuPropList"
+            @getSkuData="getSkuData"
+          ></SkuEfficient>
+        </el-tab-pane>
+        <el-tab-pane label="Sku属性类目管理" name="Sku属性类目管理">
+          <SkuProp
+            :skuPropList="skuPropList"
+            :skuPropCount="skuPropCount"
+            :commodityList="commodityList"
+            @getSkuProp="getSkuProp"
+          ></SkuProp>
+        </el-tab-pane>
+      </el-tabs>
+    </div>
   </div>
 </template>
 
