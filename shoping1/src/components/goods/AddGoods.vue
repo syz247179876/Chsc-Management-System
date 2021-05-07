@@ -103,7 +103,7 @@
                       float: right;
                       color: #8492a6;
                       font-size: 13px;
-                      padding-left:10px ;
+                      padding-left: 10px;
                     "
                     >{{ item.charge_type }}</span
                   >
@@ -160,7 +160,7 @@
             <!-- action 是图片上传的请求地址-->
             <!-- on-preview 点击预览 -->
             <!-- on-remove  点击删除 -->
-            <el-upload
+            <!-- <el-upload
               :action="imgUrl"
               :on-preview="handlePreview"
               :on-remove="handleRemove"
@@ -172,13 +172,26 @@
               <div slot="tip" class="el-upload__tip">
                 只能上传jpg/png文件，且不超过500kb
               </div>
+            </el-upload> -->
+            <el-upload
+              action="https://jsonplaceholder.typicode.com/posts/"
+              list-type="picture-card"
+              :on-preview="handlePictureCardPreview"
+              :on-remove="handlePictureRemove"
+              :before-upload="beforePictureUpload"
+            >
+              <i class="el-icon-plus"></i>
             </el-upload>
+            <el-dialog :visible.sync="dialogPictureVisible">
+              <img width="100%" :src="dialogImageUrl" alt="" />
+            </el-dialog>
           </el-tab-pane>
+
           <el-tab-pane label="商品内容" name="3">
             <!-- 富文本编辑器 -->
             <quill-editor v-model="addGood.details"></quill-editor>
             <!-- 添加商品按钮 -->
-            <el-button type="primary" class="addbtn" @click="add"
+            <el-button type="primary" class="addbtn" @click="addCommodity"
               >添加商品</el-button
             >
           </el-tab-pane>
@@ -186,11 +199,6 @@
         </el-tabs>
       </el-form>
     </el-card>
-
-    <!-- 图片预览对话框 -->
-    <el-dialog title="图片预览" :visible.sync="previewVisible" width="50%">
-      <img :src="previewUrl" alt="" class="previewImg" />
-    </el-dialog>
   </div>
 </template>
 
@@ -205,8 +213,8 @@ export default {
   data() {
     return {
       dialogSPUVisible: false, // 是否打开SPU dialog
-      value: '',
-      valuess: '',
+      dialogImageUrl: '',
+      dialogPictureVisible: false, // 是否打开图片 dialog
       // 步骤条中被激活的步骤
       activeIndex: '0',
       // 添加商品的基本信息
@@ -275,6 +283,7 @@ export default {
       previewUrl: '',
       // 预览对话框的显示和隐藏
       previewVisible: false,
+      permission: 100002,
     }
   },
 
@@ -298,7 +307,7 @@ export default {
     handleChange() {
       // 当选中的不是三级分类 则把选中的id数组请空
       if (this.addGood.category_id.length != 3) {
-        this.addGoodList.goods_cat = []
+        this.addGood.category_id = []
       }
     },
 
@@ -321,6 +330,24 @@ export default {
       if (oldActivename === '0' && this.addGood.category_id.length != 3) {
         this.$message.error('请选择分类')
         return false
+      }
+    },
+    // 图片上传预览
+    handlePictureCardPreview(file) {
+      this.dialogImageUrl = file.url
+      this.dialogPictureVisible = true
+    },
+    // 图片移除
+    handlePictureRemove(file, fileList) {
+      console.log(file, fileList)
+    },
+
+    // 在图片上传前，对图片大小进行校验
+    beforePictureUpload(file) {
+      let picSize3M = file.size / 1024 / 1024 < 3
+      if (!picSize3M) {
+        // 如果图片大小超过3M
+        this.$message.error('图片大小不超过3M')
       }
     },
 
@@ -362,27 +389,27 @@ export default {
       // }
     },
 
-    // 图片上传点击预览
-    handlePreview(file) {
-      console.log(file)
-      this.previewUrl = file.response.data.url
-      this.previewVisible = true
-      console.log(this.previewUrl)
-    },
+    // // 图片上传点击预览
+    // handlePreview(file) {
+    //   console.log(file)
+    //   this.previewUrl = file.response.data.url
+    //   this.previewVisible = true
+    //   console.log(this.previewUrl)
+    // },
 
-    // 图片上传  点击移除的操作
-    handleRemove(file) {
-      // 获取将要被移除的图片的零时保存地址
-      const picPath = file.response.data.tmp_path
+    // // 图片上传  点击移除的操作
+    // handleRemove(file) {
+    //   // 获取将要被移除的图片的零时保存地址
+    //   const picPath = file.response.data.tmp_path
 
-      // 找到零时地址在pics中的索引
-      const i = this.addGoodList.pics.findIndex((x) => {
-        x.pic = picPath
-      })
-      // 根据索引删除在pics数组中删除改零时地址
-      this.addGoodList.pics.splice(i, 1)
-      console.log(this.addGoodList)
-    },
+    //   // 找到零时地址在pics中的索引
+    //   const i = this.addGoodList.pics.findIndex((x) => {
+    //     x.pic = picPath
+    //   })
+    //   // 根据索引删除在pics数组中删除改零时地址
+    //   this.addGoodList.pics.splice(i, 1)
+    //   console.log(this.addGoodList)
+    // },
 
     //监听图片上传成功
     handleUpload(response) {
@@ -394,43 +421,69 @@ export default {
     },
 
     // 添加商品按钮
-    add() {
-      // 预验证
+    addCommodity() {
       this.$refs.addGoodRef.validate(async (valida) => {
         if (!valida) return this.$message.error('请数入必要的表单项')
-        // 预验证通过
-        // 处理发送添加商品表单的参数
-        // 将添加商品的数据深拷贝一份  因为表单项的数据格式和请求参数的格式不一样
-        // lodash里面的cloneDeep深拷贝方法
-        const form = _.cloneDeep(this.addGoodList)
-        // 处理goods_cat项
-        form.goods_cat = form.goods_cat.join(',')
-        // 处理动态参数
-        this.manyParamList.forEach((item) => {
-          const newQuery = {
-            attr_id: item.attr_id,
-            attr_value: item.attr_vals.join(' '),
-          }
-          this.addGoodList.attrs.push(newQuery)
-        })
-        // 处理静态参数
-        this.onlyParamList.forEach((item) => {
-          const newQuery = {
-            attr_id: item.attr_id,
-            attr_value: item.attr_vals,
-          }
-          this.addGoodList.attrs.push(newQuery)
-        })
-        form.attrs = this.addGoodList.attrs
-        //  console.log(form)
-        // 发送添加商品亲求
-        const { data: res } = await this.$http.post('/goods', form)
-        console.log(res)
-        if (res.meta.status != 201) return this.$message.error('添加商品失败')
-        // 请求成功
-        this.$message.success('添加商品成功')
-        this.$router.push('/goods')
+        let data = this.addGood
+        data.category_id = data.category_id[data.category_id.length - 1]
+        data.spu = this.spuList.join('-') // 拼接spu参数
+        this.$http
+          .post('/seller/chsc/apis/commodity/', data, {
+            headers: { Permission: this.permission },
+          })
+          .then((res) => {
+            this.$message({
+              message: '创建成功',
+              showClose: true,
+              type: 'success',
+            })
+            this.$router.push({ name: 'Good' })
+          })
+          .catch((err) => {
+            this.$message({
+              message: '添加失败',
+              showClose: true,
+              type: 'error',
+            })
+          })
       })
+
+      // // 预验证
+      // this.$refs.addGoodRef.validate(async (valida) => {
+      //   if (!valida) return this.$message.error('请数入必要的表单项')
+      //   // 预验证通过
+      //   // 处理发送添加商品表单的参数
+      //   // 将添加商品的数据深拷贝一份  因为表单项的数据格式和请求参数的格式不一样
+      //   // lodash里面的cloneDeep深拷贝方法
+      //   const form = _.cloneDeep(this.addGoodList)
+      //   // 处理goods_cat项
+      //   form.goods_cat = form.goods_cat.join(',')
+      //   // 处理动态参数
+      //   this.manyParamList.forEach((item) => {
+      //     const newQuery = {
+      //       attr_id: item.attr_id,
+      //       attr_value: item.attr_vals.join(' '),
+      //     }
+      //     this.addGoodList.attrs.push(newQuery)
+      //   })
+      //   // 处理静态参数
+      //   this.onlyParamList.forEach((item) => {
+      //     const newQuery = {
+      //       attr_id: item.attr_id,
+      //       attr_value: item.attr_vals,
+      //     }
+      //     this.addGoodList.attrs.push(newQuery)
+      //   })
+      //   form.attrs = this.addGoodList.attrs
+      //   //  console.log(form)
+      //   // 发送添加商品亲求
+      //   const { data: res } = await this.$http.post('/goods', form)
+      //   console.log(res)
+      //   if (res.meta.status != 201) return this.$message.error('添加商品失败')
+      //   // 请求成功
+      //   this.$message.success('添加商品成功')
+      //   this.$router.push('/goods')
+      // })
     },
   },
 

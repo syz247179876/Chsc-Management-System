@@ -54,7 +54,7 @@
             <el-button
               type="warning"
               size="mini"
-              @click="deleteGoodsBtn(scope.row.goods_id)"
+              @click="deleteGoodsBtn(scope.row.pk)"
               >删除</el-button
             >
           </template>
@@ -136,11 +136,19 @@ export default {
       // 取消了删除
       if (deleteResult != 'confirm') return this.$message.info('取消了删除')
       // 确认了删除
-      const { data: res } = await this.$http.delete('/goods/' + gid)
-      if (res.meta.status != 200) this.$message.error('删除失败')
-      // 成功删除
-      this.getGoodList()
-      this.$message.success('删除成功')
+      let data = {
+        pk_list: [gid],
+      }
+      const res = await this.$http.delete('/seller/chsc/apis/commodity/', {
+        data: data,
+        headers: { Permission: this.permission },
+      })
+      if (res.status === 200 && res.data.code === 1076) {
+        // 成功删除
+        this.$message.success('删除成功')
+        this.getGoodList()
+      }
+      this.$message.faile('删除失败')
     },
 
     // 添加商品按钮
