@@ -28,7 +28,7 @@
         <el-step title="基本信息"></el-step>
         <el-step title="商品参数"></el-step>
         <el-step title="商品图片"></el-step>
-        <el-step title="商品内容"></el-step>
+        <el-step title="商品详情"></el-step>
         <el-step title="完成"></el-step>
       </el-steps>
 
@@ -47,6 +47,14 @@
           @tab-click="tabClick"
         >
           <el-tab-pane label="基本信息" name="0">
+            <el-form-item label="商品分类" prop="category_id">
+              <el-cascader
+                v-model="addGood.category_id"
+                :options="cateList"
+                :props="{ expandTrigger: 'hover' }"
+                @change="handleChange"
+              ></el-cascader>
+            </el-form-item>
             <el-form-item label="商品名称" prop="commodity_name">
               <el-input v-model="addGood.commodity_name"></el-input>
             </el-form-item>
@@ -74,14 +82,8 @@
             <el-form-item label="商品库存" prop="stock">
               <el-input v-model="addGood.stock" type="number"></el-input>
             </el-form-item>
-
-            <el-form-item label="分类" prop="category_id">
-              <el-cascader
-                v-model="addGood.category_id"
-                :options="cateList"
-                :props="{ expandTrigger: 'hover' }"
-                @change="handleChange"
-              ></el-cascader>
+            <el-form-item label="商品库存" prop="stock">
+              <el-switch v-model="addGood.status"></el-switch>
             </el-form-item>
             <el-form-item label="运费模板" prop="freight_id">
               <el-select
@@ -173,6 +175,7 @@
                 只能上传jpg/png文件，且不超过500kb
               </div>
             </el-upload> -->
+            <p>请添加商品的图片，用于商品详情页展示</p>
             <el-upload
               action="https://jsonplaceholder.typicode.com/posts/"
               list-type="picture-card"
@@ -187,7 +190,7 @@
             </el-dialog>
           </el-tab-pane>
 
-          <el-tab-pane label="商品内容" name="3">
+          <el-tab-pane label="商品详情" name="3">
             <!-- 富文本编辑器 -->
             <quill-editor v-model="addGood.details"></quill-editor>
             <!-- 添加商品按钮 -->
@@ -195,7 +198,6 @@
               >添加商品</el-button
             >
           </el-tab-pane>
-          <el-tab-pane label="完成" name="4">完成</el-tab-pane>
         </el-tabs>
       </el-form>
     </el-card>
@@ -228,6 +230,7 @@ export default {
         stock: 0, // 商品库存
         freight_id: '', // 运费模板id
         category_id: '', // 运费模板id
+        spu: '', // 商品参数
       },
       // 商品单个spu属性键值对
       spu: {

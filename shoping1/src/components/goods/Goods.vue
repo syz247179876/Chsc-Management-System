@@ -32,9 +32,39 @@
       <!-- 商品表格 -->
       <el-table :data="goodList" border stripe>
         <el-table-column type="index"></el-table-column>
+        <!-- 行展开 -->
+        <el-table-column type="expand">
+          <template slot-scope="props">
+            <el-form label-position="left" block>
+              <el-form-item label="商品名:">
+                <span>{{ props.row.commodity_name }}</span>
+              </el-form-item>
+              <el-form-item label="商品参数:">
+                <el-tag
+                  class="tag"
+                  v-if="props.row.spu == null || props.row.spu == ''"
+                >
+                  该商品暂无任何参数
+                </el-tag>
+                <el-tag
+                  class="tag"
+                  v-else
+                  v-for="(spu, index) in props.row.spu.split('-')"
+                  :key="index"
+                >
+                  {{ spu }}
+                </el-tag>
+              </el-form-item>
+              <el-form-item label="商品详情:">
+                <div v-html="props.row.details"></div>
+              </el-form-item>
+            </el-form>
+          </template>
+        </el-table-column>
         <el-table-column
           label="商品名称"
           prop="commodity_name"
+          width="200px"
         ></el-table-column>
         <el-table-column
           label="商品价格"
@@ -46,7 +76,19 @@
           prop="favourable_price"
           width="85px"
         ></el-table-column>
-        <el-table-column label="简要介绍" prop="intro" width="190px">
+
+        <el-table-column label="库存量" prop="stock" width="190px">
+        </el-table-column>
+        <el-table-column label="简要介绍" prop="intro"> </el-table-column>
+        <el-table-column label="是否上架" prop="status" width="120px">
+          <template slot-scope="scope">
+            <el-switch
+              v-model="scope.row.status"
+              active-color="#13ce66"
+              inactive-color="#ff4949"
+              disabled
+            ></el-switch>
+          </template>
         </el-table-column>
         <el-table-column label="操作" width="180px">
           <template slot-scope="scope">
@@ -61,7 +103,7 @@
         </el-table-column>
       </el-table>
       <!-- 底部分页 -->
-      <el-pagination
+      <!-- <el-pagination
         @size-change="handleSizeChange"
         @current-change="handleCurrentChange"
         :current-page="queryInfo.pagenum"
@@ -71,7 +113,7 @@
         :total="count"
         :background="true"
       >
-      </el-pagination>
+      </el-pagination> -->
     </el-card>
   </div>
 </template>
@@ -159,4 +201,10 @@ export default {
 }
 </script>
 
-<style lang="less" scope></style>
+<style scoped>
+.tag {
+  font-size: 18px;
+  margin-left: 10px;
+  margin-bottom: 8px;
+}
+</style>
