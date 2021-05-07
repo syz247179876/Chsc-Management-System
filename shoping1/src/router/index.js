@@ -27,6 +27,8 @@ const Order = () =>
 const Freight = () =>
     import ('@/components/freight/Freight')
 
+const AddGoods = () =>
+    import ('@/components/goods/AddGoods')
 
 Vue.use(VueRouter)
 
@@ -43,7 +45,8 @@ const routes = [
             { path: '/sku', name: 'Sku', component: Sku },
             { path: '/store', name: 'Store', component: Store },
             { path: '/order', name: 'Order', component: Order },
-            { path: '/freight', name: 'Freight', component: Freight }
+            { path: '/freight', name: 'Freight', component: Freight },
+            { path: '/goods-add', name: 'AddGoods', component: AddGoods }
         ],
     },
 ]

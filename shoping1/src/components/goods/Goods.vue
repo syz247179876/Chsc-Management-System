@@ -107,7 +107,7 @@ export default {
       })
       if (res.status != 200) return this.$message.error('获取商品列表失败')
       this.goodList = res.data.data
-      this.count = res.data.count;  
+      this.count = res.data.count
     },
 
     // 监听每页显示多少条数据的变化
@@ -125,7 +125,7 @@ export default {
     async deleteGoodsBtn(gid) {
       // 确认是否删除
       const deleteResult = await this.$confirm(
-        '此操作将永久删除该文件, 是否继续?',
+        '此操作将永久删除该商品, 是否继续?',
         '提示',
         {
           confirmButtonText: '确定',
@@ -145,7 +145,7 @@ export default {
 
     // 添加商品按钮
     addGoods() {
-      this.$router.push('/goods/add')
+      this.$router.push({ name: 'AddGoods' })
     },
   },
 }
