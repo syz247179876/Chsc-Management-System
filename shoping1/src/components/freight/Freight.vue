@@ -30,17 +30,46 @@
       <!-- 商品表格 -->
       <el-table :data="freightList" border stripe>
         <el-table-column type="index"></el-table-column>
+        <el-table-column type="expand">
+          <template slot-scope="props">
+            <el-form label-position="left" block class="demo-table-expand">
+              <p v-if="props.row.is_free">由于包邮,无邮寄信息</p>
+              <el-form-item v-else label="邮寄可达地址:">
+                <br />
+                <div
+                  v-for="(freightItem, index) in props.row.freight_items"
+                  :key="index"
+                >
+                  <el-tag
+                    type="danger"
+                    v-for="(city, indexCity) in freightItem.city.split('-')"
+                    :key="indexCity"
+                  >
+                    {{ city }}
+                    <br />
+                  </el-tag>
+                </div>
+              </el-form-item>
+            </el-form>
+          </template>
+        </el-table-column>
+
         <el-table-column
           label="运费模板名"
           prop="name"
           width="200px"
         ></el-table-column>
-        <el-table-column label="是否" prop="str_is_free"></el-table-column>
-        <el-table-column
-          label="是否包邮"
-          prop="str_is_free"
-          width="85px"
-        ></el-table-column>
+        <el-table-column label="是否包邮" prop="str_is_free">
+          <template slot-scope="scope">
+            <el-switch
+              v-model="scope.row.is_free"
+              active-color="#13ce66"
+              inactive-color="#ff4949"
+              disabled
+            >
+            </el-switch>
+          </template>
+        </el-table-column>
         <el-table-column
           label="收费类型"
           prop="str_charge_type"
