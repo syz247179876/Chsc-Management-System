@@ -142,21 +142,33 @@ export default {
     },
     // 确认保存按钮，避免回调地狱
     async save() {
+      var res
       let data = {
         commodity: this.skuPropForm['commodity'],
         name: this.skuPropForm['name'],
         sku_values: this.skuValues,
       }
-      const res = await this.$http.post(
-        '/seller/chsc/apis/sku-property/',
-        data,
-        {
+      if (this.pk < 0) {
+        res = await this.$http.post('/seller/chsc/apis/sku-property/', data, {
           headers: { Permission: 100008 },
-        }
-      )
+        })
+      } else {
+        data.pk = this.pk
+        res = await this.$http.put('/seller/chsc/apis/sku-property/', data, {
+          headers: { Permission: 100008 },
+        })
+      }
+
       if (res.status === 200 && res.data.code === 1049) {
         this.$message({
-          message: '创建成功',
+          message: res.data.msg,
+          showClose: true,
+          type: 'success',
+        })
+        this.$emit('refresh') // 再次请求数据进行刷新
+      } else if (res.status === 200 && res.data.code === 1050) {
+        this.$message({
+          message: res.data.msg,
           showClose: true,
           type: 'success',
         })
