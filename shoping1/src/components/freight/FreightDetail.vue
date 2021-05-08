@@ -126,7 +126,12 @@
               <el-button
                 class="button-new-tag"
                 size="small"
-                @click="deleteFreightItem(index)"
+                @click="
+                  deleteFreightItem(
+                    freightForm.freight_items_w[index].pk,
+                    index
+                  )
+                "
                 v-if="index > 0"
                 >删除</el-button
               >
@@ -301,7 +306,7 @@ export default {
         first_price: 0,
         continue_piece: 0,
         continue_price: 0,
-        city: new Array(),
+        city: '全国',
         status: false,
       }
       if (this.pk > 0) {
@@ -313,7 +318,8 @@ export default {
           })
           .then((res) => {
             if (res.status == 200 && res.data.code === 1074) {
-              data.city = [] // 设置为空数组
+              data.city = ['全国'] // 设置为空数组
+              data.pk = res.data.data.pk // 保存创建后的pk数据
               this.freightForm.freight_items_w.push(data) // 追加一条子表单
             }
           })
@@ -355,8 +361,25 @@ export default {
     },
 
     // 删除运费项
-    deleteFreightItem(index) {
-      this.freightForm.freight_items_w.splice(index, 1)
+    async deleteFreightItem(pk, index) {
+      const res = await this.$http.delete(
+        '/seller/chsc/apis/freight-item/' + pk + '/',
+        { headers: { Permission: this.permission } }
+      )
+      if (res.status === 200 && res.data.code === 1075) {
+        this.$message({
+          message: '删除成功',
+          showClose: true,
+          type: 'success',
+        })
+        this.freightForm.freight_items_w.splice(index, 1)
+      } else {
+        this.$message({
+          message: res.data.detail,
+          showClose: true,
+          type: 'error',
+        })
+      }
     },
 
     // 关闭dialog，发送父组件，修改dialogVisible值为fasle
@@ -375,8 +398,6 @@ export default {
     // 鼠标移开input标签，调用该函数，加入元素，渲染dom
     handleInputConfirm(index) {
       let cityName = this.city
-      console.log(cityName)
-      console.log(index)
       if (cityName) {
         this.freightForm.freight_items_w[index].city.push(cityName)
       }
