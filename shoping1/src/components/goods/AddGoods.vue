@@ -82,7 +82,7 @@
             <el-form-item label="商品库存" prop="stock">
               <el-input v-model="addGood.stock" type="number"></el-input>
             </el-form-item>
-            <el-form-item label="商品库存" prop="stock">
+            <el-form-item label="商品是否上架" prop="stock">
               <el-switch v-model="addGood.status"></el-switch>
             </el-form-item>
             <el-form-item label="运费模板" prop="freight_id">
@@ -440,6 +440,7 @@ export default {
               showClose: true,
               type: 'success',
             })
+            // this.$router.push({ name: 'Sku' })
             this.$router.push({ name: 'Good' })
           })
           .catch((err) => {

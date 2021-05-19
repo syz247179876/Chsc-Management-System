@@ -181,16 +181,23 @@ export default {
       let data = {
         pk_list: [gid],
       }
-      const res = await this.$http.delete('/seller/chsc/apis/commodity/', {
-        data: data,
-        headers: { Permission: this.permission },
-      })
-      if (res.status === 200 && res.data.code === 1076) {
-        // 成功删除
-        this.$message.success('删除成功')
-        this.getGoodList()
-      }
-      this.$message.faile('删除失败')
+      this.$http
+        .delete('/seller/chsc/apis/commodity/', {
+          data: data,
+          headers: { Permission: this.permission },
+        })
+        .then((res) => {
+          if (res.status === 200 && res.data.code === 1076) {
+            // 成功删除
+            this.$message.success('删除成功')
+            this.getGoodList()
+          } else {
+            this.$message.error(res.data.detail)
+          }
+        })
+        .catch((err) => {
+          console.log(err)
+        })
     },
 
     // 添加商品按钮
