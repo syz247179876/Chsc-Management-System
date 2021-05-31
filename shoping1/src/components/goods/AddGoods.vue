@@ -44,7 +44,6 @@
           :tab-position="'left'"
           v-model="activeIndex"
           :before-leave="tabChange"
-          @tab-click="tabClick"
         >
           <el-tab-pane label="基本信息" name="0">
             <el-form-item label="商品分类" prop="category_id">
@@ -158,30 +157,29 @@
             </el-dialog>
           </el-tab-pane>
           <el-tab-pane label="商品图片" name="2">
-            <!-- 上传图片 -->
-            <!-- action 是图片上传的请求地址-->
-            <!-- on-preview 点击预览 -->
-            <!-- on-remove  点击删除 -->
-            <!-- <el-upload
-              :action="imgUrl"
-              :on-preview="handlePreview"
-              :on-remove="handleRemove"
-              list-type="picture"
-              :headers="headerObj"
-              :on-success="handleUpload"
-            >
-              <el-button size="small" type="primary">点击上传</el-button>
-              <div slot="tip" class="el-upload__tip">
-                只能上传jpg/png文件，且不超过500kb
-              </div>
-            </el-upload> -->
-            <p>请添加商品的图片，用于商品详情页展示</p>
+            <p>请添加商品的大图片，用于商品详情页顶部轮播展示</p>
             <el-upload
-              action="https://jsonplaceholder.typicode.com/posts/"
+              action="#"
               list-type="picture-card"
               :on-preview="handlePictureCardPreview"
-              :on-remove="handlePictureRemove"
-              :before-upload="beforePictureUpload"
+              :on-remove="handleRemove"
+              multiple
+              :http-request="uploadPictureBig"
+            >
+              <i class="el-icon-plus"></i>
+            </el-upload>
+            <el-dialog :visible.sync="dialogPictureVisible">
+              <img width="100%" :src="dialogImageUrl" alt="" />
+            </el-dialog>
+            <p>请添加商品的小图片，用于浏览展示商品</p>
+            <el-upload
+              action="#"
+              list-type="picture-card"
+              :on-preview="handlePictureCardPreview"
+              :on-remove="handleRemove"
+              :limit="1"
+              :multiple="false"
+              :http-request="uploadPictureSmall"
             >
               <i class="el-icon-plus"></i>
             </el-upload>
@@ -207,6 +205,8 @@
 <script>
 // 引入lodash组件 用里面的cloneDeep深拷贝方法
 var _ = require('lodash')
+import { uploadOSS } from '@/utils/oss'
+import OSS from 'ali-oss'
 
 export default {
   created() {
@@ -217,6 +217,7 @@ export default {
       dialogSPUVisible: false, // 是否打开SPU dialog
       dialogImageUrl: '',
       dialogPictureVisible: false, // 是否打开图片 dialog
+      disabled: false,
       // 步骤条中被激活的步骤
       activeIndex: '0',
       // 添加商品的基本信息
@@ -231,6 +232,8 @@ export default {
         freight_id: '', // 运费模板id
         category_id: '', // 运费模板id
         spu: '', // 商品参数
+        big_image: '', // 商品大图完整路径
+        little_image: '', // 商品小图完整路径
       },
       // 商品单个spu属性键值对
       spu: {
@@ -287,9 +290,12 @@ export default {
       // 预览对话框的显示和隐藏
       previewVisible: false,
       permission: 100002,
+      // 文件访问完整路径列表
+      fileList: [],
+      // oss实例
+      oss: null,
     }
   },
-
   methods: {
     // 获取商品所需额外信息
     async getGoodCate() {
@@ -335,84 +341,90 @@ export default {
         return false
       }
     },
+
+    // 自定义上传
+    uploadPictureBig(option) {
+      let file = option.file // 文件对象
+      let is_valid = this.beforeUpload(file)
+      if (is_valid) {
+        this.$http
+          .get('/universal/chsc/apis/settings/oss')
+          .then((res) => {
+            let data = res.data
+            if (this.oss == null) {
+              this.oss = new OSS({
+                region: data.region,
+                success_action_status: res.status, // 默认200
+                accessKeyId: data.accessKeyId,
+                accessKeySecret: data.accessKeySecret,
+                bucket: data.bucket,
+              })
+            }
+            let promise = uploadOSS(this.oss, file) // 上传文件
+            // promise对象用then来解析获取其中的数值
+            promise.then((res) => {
+              this.fileList.push(res.name)
+              this.$message.success('上传成功')
+            })
+          })
+          .catch((err) => {
+            this.$message.error('获取oss参数失败')
+          })
+      }
+    },
+
+    // 自定义上传
+    uploadPictureSmall(option) {
+      let file = option.file // 文件对象
+      let is_valid = this.beforeUpload(file)
+      if (is_valid) {
+        this.$http
+          .get('/universal/chsc/apis/settings/oss')
+          .then((res) => {
+            let data = res.data
+            if (this.oss == null) {
+              this.oss = new OSS({
+                region: data.region,
+                success_action_status: res.status, // 默认200
+                accessKeyId: data.accessKeyId,
+                accessKeySecret: data.accessKeySecret,
+                bucket: data.bucket,
+              })
+            }
+            let promise = uploadOSS(this.oss, file) // 上传文件
+            promise.then((res) => {
+              this.addGood.little_image = res.name
+            })
+            this.$message.success('上传成功')
+          })
+          .catch((err) => {
+            this.$message.error('获取oss参数失败')
+          })
+      }
+    },
+
+    // 图片上传前校验
+    beforeUpload(file) {
+      let picSize3M = file.size / 1024 / 1024 < 1
+      if (!picSize3M) {
+        // 如果图片大小超过3M
+        this.$message.error('图片大小不超过3M')
+        return false
+      } else {
+        return true
+      }
+    },
+
     // 图片上传预览
     handlePictureCardPreview(file) {
       this.dialogImageUrl = file.url
       this.dialogPictureVisible = true
     },
-    // 图片移除
-    handlePictureRemove(file, fileList) {
-      console.log(file, fileList)
+
+    // 删除图片
+    handleRemove(file) {
+      console.log(file)
     },
-
-    // 在图片上传前，对图片大小进行校验
-    beforePictureUpload(file) {
-      let picSize3M = file.size / 1024 / 1024 < 3
-      if (!picSize3M) {
-        // 如果图片大小超过3M
-        this.$message.error('图片大小不超过3M')
-      }
-    },
-
-    // tab栏被点击选中时触发  获取对应参数列表
-    async tabClick() {
-      //  点击商品参数
-      // if (this.activeIndex === '1') {
-      //   // 获取参数列表
-      //   const { data: res } = await this.$http.get(
-      //     `/categories/${this.cid}/attributes`,
-      //     {
-      //       params: {
-      //         sel: 'many',
-      //       },
-      //     }
-      //   )
-      //   if (res.meta.status != 200) return this.$message.error('获取参数失败')
-      //   // 请求成功
-      //   // 将data里面的attr_vals转换为数组形式
-      //   res.data.forEach((item) => {
-      //     item.attr_vals = item.attr_vals ? item.attr_vals.split(' ') : []
-      //   })
-      //   this.manyParamList = res.data
-      //   console.log(res)
-      // } else if (this.activeIndex === '2') {
-      //   // 点击商品静态属性
-      //   const { data: res } = await this.$http.get(
-      //     `/categories/${this.cid}/attributes`,
-      //     {
-      //       params: {
-      //         sel: 'only',
-      //       },
-      //     }
-      //   )
-      //   if (res.meta.status != 200) return this.$message.error('获取参数失败')
-      //   // 请求成功
-      //   this.onlyParamList = res.data
-      //   console.log(res)
-      // }
-    },
-
-    // // 图片上传点击预览
-    // handlePreview(file) {
-    //   console.log(file)
-    //   this.previewUrl = file.response.data.url
-    //   this.previewVisible = true
-    //   console.log(this.previewUrl)
-    // },
-
-    // // 图片上传  点击移除的操作
-    // handleRemove(file) {
-    //   // 获取将要被移除的图片的零时保存地址
-    //   const picPath = file.response.data.tmp_path
-
-    //   // 找到零时地址在pics中的索引
-    //   const i = this.addGoodList.pics.findIndex((x) => {
-    //     x.pic = picPath
-    //   })
-    //   // 根据索引删除在pics数组中删除改零时地址
-    //   this.addGoodList.pics.splice(i, 1)
-    //   console.log(this.addGoodList)
-    // },
 
     //监听图片上传成功
     handleUpload(response) {
@@ -428,6 +440,7 @@ export default {
       this.$refs.addGoodRef.validate(async (valida) => {
         if (!valida) return this.$message.error('请数入必要的表单项')
         let data = this.addGood
+        data.big_image = this.fileList.join(';')
         data.category_id = data.category_id[data.category_id.length - 1]
         data.spu = this.spuList.join('-') // 拼接spu参数
         this.$http

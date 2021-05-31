@@ -1,17 +1,4 @@
-import co from 'co'
-
-const OSSConfig = {
-
-    uploadHost: 'vue-e-mall.oss-cn-beijing.aliyuncs.com', //OSS上传地址
-    type: 'scs',
-    ossParams: {
-        region: 'oss-cn-beijing',
-        success_action_status: '200', // 默认200
-        accessKeyId: 'LTAI5t7ndGistyRNhLfir26p',
-        accessKeySecret: 'FDxEF3gv8CbfmFuOzjBaRBqP6yKCXg',
-        bucket: 'vue-e-mall',
-    },
-}
+import OSS from 'ali-oss'
 
 function random_string(len) {
     len = len || 32
@@ -31,31 +18,14 @@ function random_string(len) {
  * @param dir oss要保存的文件夹
  * @returns {OSS文件路径}
  */
-
-function uploadOSS(event, type, dir = 'file/') {
-    return new Promise((resolve, reject) => {
-        var client = new OSS({
-            region: OSSConfig.ossParams.region,
-            accessKeyId: OSSConfig.ossParams.accessKeyId,
-            accessKeySecret: OSSConfig.ossParams.accessKeySecret,
-            bucket: OSSConfig.ossParams.bucket,
-        });
-        var file;
-        if (type == 0) {
-            file = event;
-        } else {
-            file = event.target.files[0];
-        }
-        let randomName = `${dir}${random_string(6)}_${file.name}`;
-        co(function*() {
-            var result = yield client.multipartUpload(randomName, file);
-            console.log(`${OSSConfig.uploadHost}/${result.name}`);
-            resolve(`${OSSConfig.uploadHost}/${result.name}`);
-        }).catch(function(err) {
-            console.log(err);
-            reject(err);
-        });
-    });
+async function uploadOSS(oss, file, dir = 'commodity/') {
+    // 设置路径
+    let randomName = `${dir}${random_string(6)}_${file.name}`;
+    const res = await oss.multipartUpload(
+        randomName,
+        file
+    )
+    return res
 }
 
 export { uploadOSS }
